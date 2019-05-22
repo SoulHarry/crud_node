@@ -1,0 +1,8 @@
+[user]
+	name = Harold Velez
+	email = hvelez56@gmail.com
+[color]
+	status = auto
+	branch = auto
+	diff = auto
+	interactive = auto

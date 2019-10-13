@@ -15,6 +15,7 @@ router.post('/add', async (req,res)=>{
         description
     };
     await pool.query('INSERT INTO links set ?',[newLink]); //Tambien se puede usar promesa o hacer un llamado callback en la función
+    req.flash('success', 'Link saved successfully')
     res.redirect('/links');
 })
 
@@ -31,6 +32,7 @@ router.get('/', async (req,res)=>{
 router.get('/delete/:id', async(req,res)=>{
     const {id} = req.params;
     pool.query("DELETE FROM links WHERE id = ?",[id]);
+    req.flash('success','Link removed successfully')
     res.redirect("/links")
 });
 
@@ -47,6 +49,7 @@ router.post('/edit/:id', async (req,res)=>{
         title,url,description
     }
     await pool.query("UPDATE links set ? WHERE id = ?", [editLink,id]);
+    req.flash('success','Link updated successfully')
     res.redirect("/links")
 
 })

@@ -29,3 +29,24 @@ passport.deserializeUser(async (id, done)=>{
     const row = await pool.query("SELECT * FROM users where id = ? ",[id]);
     done(null, row[0]);
 });
+
+passport.use('local.signin', new localStrategy({
+    usernameField: 'username',
+    passwordField: 'password',
+    passReqToCallback: true
+}, async (req, username, password, done)=>{
+    const result  = await pool.query("SELECT * FROM users where username=?", [username]);
+
+    if(result.length>0){
+        const user = result[0];
+        const validPassword = await helper.matchPassword(password, user.password);
+        console.log(validPassword)
+        if(validPassword){
+            done(null, user, req.flash('success',`Welcome ${user.username}`))
+        }else{
+            done(null,false,req.flash('message','Incorrect credentials'))
+        }
+    }else{
+        return done(null, false, req.flash('message','Incorrect credentials'))
+    }
+}))

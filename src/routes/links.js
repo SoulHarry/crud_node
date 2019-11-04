@@ -1,9 +1,9 @@
 const express = require('express')
 const router = express.Router();
-
 const pool = require('../database');
+const { isLoggedIn } = require('../lib/auth')
 
-router.get('/add',(req,res)=>{
+router.get('/add',isLoggedIn, (req,res)=>{
     res.render('links/add');
 })
 
@@ -12,7 +12,8 @@ router.post('/add', async (req,res)=>{
     const newLink = {
         title,
         url,
-        description
+        description,
+        user_id: req.user.id
     };
     await pool.query('INSERT INTO links set ?',[newLink]); //Tambien se puede usar promesa o hacer un llamado callback en la función
     req.flash('success', 'Link saved successfully')
@@ -20,23 +21,23 @@ router.post('/add', async (req,res)=>{
 })
 
 router.post('/', async (req,res)=>{
-    const links = await pool.query("SELECT * FROM links ");
+    const links = await pool.query("SELECT * FROM links WHERE user_id = ? ", req.user.id);
     res.render(links);
 })
 
 router.get('/', async (req,res)=>{
-    const links = await pool.query('SELECT * FROM links');
+    const links = await pool.query('SELECT * FROM links WHERE user_id = ? ', req.user.id);
     res.render('links/list',{links})
 });
 
-router.get('/delete/:id', async(req,res)=>{
+router.get('/delete/:id',isLoggedIn, async(req,res)=>{
     const {id} = req.params;
     pool.query("DELETE FROM links WHERE id = ?",[id]);
     req.flash('success','Link removed successfully')
     res.redirect("/links")
 });
 
-router.get('/edit/:id', async(req,res)=>{
+router.get('/edit/:id', isLoggedIn, async(req,res)=>{
     const {id} = req.params;
     const links = await pool.query("SELECT * FROM links WHERE id = ?", [id]);
     res.render('links/edit',{links: links[0]});
